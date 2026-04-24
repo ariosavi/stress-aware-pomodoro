@@ -21,6 +21,8 @@ class Stress_AwarePomodoroGlanceView extends WatchUi.GlanceView {
         var line2Y = height / 3;
         var line3Y = (height * 2) / 3;
 
+        var app = getApp();
+
         // Line 1: Title
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(
@@ -31,9 +33,33 @@ class Stress_AwarePomodoroGlanceView extends WatchUi.GlanceView {
             Graphics.TEXT_JUSTIFY_LEFT
         );
 
-        // Line 2: Pomodoro status
-        var pomodoroText = "Ready to start";
+        // Line 2: Pomodoro live status
+        var pomodoroText = "Ready to focus";
         var pomodoroColor = Graphics.COLOR_GREEN;
+
+        if (app.state == app.STATE_FOCUSING) {
+            if (app.isPaused) {
+                pomodoroText = Lang.format("Paused: $1$", [formatTime(app.timeRemaining)]);
+                pomodoroColor = Graphics.COLOR_YELLOW;
+            } else {
+                pomodoroText = Lang.format("Focus: $1$", [formatTime(app.timeRemaining)]);
+                pomodoroColor = Graphics.COLOR_GREEN;
+            }
+        } else if (app.state == app.STATE_BREAK) {
+            if (app.isPaused) {
+                pomodoroText = Lang.format("Paused: $1$", [formatTime(app.timeRemaining)]);
+                pomodoroColor = Graphics.COLOR_YELLOW;
+            } else {
+                pomodoroText = Lang.format("Break: $1$", [formatTime(app.timeRemaining)]);
+                pomodoroColor = Graphics.COLOR_BLUE;
+            }
+        } else if (app.state == app.STATE_ANALYZING) {
+            pomodoroText = "Analyzing stress...";
+            pomodoroColor = Graphics.COLOR_ORANGE;
+        } else if (app.state == app.STATE_BREAK_PROMPT) {
+            pomodoroText = "Break ready - tap app";
+            pomodoroColor = Graphics.COLOR_BLUE;
+        }
         
         dc.setColor(pomodoroColor, Graphics.COLOR_TRANSPARENT);
         dc.drawText(
@@ -81,5 +107,11 @@ class Stress_AwarePomodoroGlanceView extends WatchUi.GlanceView {
             stressText,
             Graphics.TEXT_JUSTIFY_LEFT
         );
+    }
+
+    private function formatTime(seconds as Number) as String {
+        var m = seconds / 60;
+        var s = seconds % 60;
+        return Lang.format("$1$:$2$", [m.format("%02d"), s.format("%02d")]);
     }
 }

@@ -1,41 +1,13 @@
-import Toybox.Attention;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.SensorHistory;
 import Toybox.System;
-import Toybox.Timer;
 import Toybox.WatchUi;
 
 class Stress_AwarePomodoroView extends WatchUi.View {
-    private var mState as Number;
-    private var mTimer as Timer.Timer?;
-    private var mTimeRemaining as Number;
-    private var mBreakDuration as Number;
-    private var mStressAverage as Number?;
-    private var mIsPaused as Boolean;
-    private var mSessionCount as Number;
-
-    private const STATE_READY = 0;
-    private const STATE_FOCUSING = 1;
-    private const STATE_ANALYZING = 2;
-    private const STATE_BREAK_PROMPT = 3;
-    private const STATE_BREAK = 4;
-
-    private const FOCUS_DURATION = 25 * 60;
-    private const BREAK_SHORT = 5 * 60;
-    private const BREAK_LONG = 10 * 60;
-    private const BREAK_EXTRA_LONG = 20 * 60;
-    private const SESSIONS_BEFORE_LONG_BREAK = 4;
 
     function initialize() {
         View.initialize();
-        mState = STATE_READY;
-        mTimeRemaining = 0;
-        mBreakDuration = 0;
-        mStressAverage = null;
-        mTimer = null;
-        mIsPaused = false;
-        mSessionCount = 0;
     }
 
     function onShow() as Void {
@@ -43,7 +15,7 @@ class Stress_AwarePomodoroView extends WatchUi.View {
     }
 
     function onHide() as Void {
-        stopTimer();
+        // Never stop timer here! State lives in App and continues running
     }
 
     function onUpdate(dc as Dc) as Void {
@@ -58,33 +30,35 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         var subText = "";
         var infoText = "";
         var accentColor = Graphics.COLOR_WHITE;
+        
+        var app = getApp();
 
-        if (mState == STATE_READY) {
+        if (app.state == app.STATE_READY) {
             text = "Ready";
             subText = "Press Start";
             accentColor = Graphics.COLOR_GREEN;
-        } else if (mState == STATE_FOCUSING) {
-            if (mIsPaused) {
+        } else if (app.state == app.STATE_FOCUSING) {
+            if (app.isPaused) {
                 text = "Paused";
-                subText = formatTime(mTimeRemaining);
+                subText = formatTime(app.timeRemaining);
                 infoText = "Back to reset";
                 accentColor = Graphics.COLOR_YELLOW;
             } else {
-                text = formatTime(mTimeRemaining);
+                text = formatTime(app.timeRemaining);
                 subText = "Focusing";
-                infoText = "Done: " + mSessionCount;
+                infoText = "Done: " + app.sessionCount;
                 accentColor = Graphics.COLOR_GREEN;
             }
-        } else if (mState == STATE_ANALYZING) {
+        } else if (app.state == app.STATE_ANALYZING) {
             text = "Analyzing";
             subText = "Reading stress";
             accentColor = Graphics.COLOR_ORANGE;
-        } else if (mState == STATE_BREAK_PROMPT) {
-            if (mBreakDuration == BREAK_SHORT) {
+        } else if (app.state == app.STATE_BREAK_PROMPT) {
+            if (app.breakDuration == app.BREAK_SHORT) {
                 text = "Good job";
                 subText = "5m break";
                 accentColor = Graphics.COLOR_BLUE;
-            } else if (mBreakDuration == BREAK_LONG) {
+            } else if (app.breakDuration == app.BREAK_LONG) {
                 text = "High stress";
                 subText = "10m break";
                 accentColor = Graphics.COLOR_RED;
@@ -93,19 +67,19 @@ class Stress_AwarePomodoroView extends WatchUi.View {
                 subText = "20m break";
                 accentColor = Graphics.COLOR_PURPLE;
             }
-            if (mStressAverage != null) {
-                infoText = "Avg stress: " + mStressAverage;
+            if (app.stressAverage != null) {
+                infoText = "Avg stress: " + app.stressAverage;
             } else {
                 infoText = "Press Start";
             }
-        } else if (mState == STATE_BREAK) {
-            if (mIsPaused) {
+        } else if (app.state == app.STATE_BREAK) {
+            if (app.isPaused) {
                 text = "Paused";
-                subText = formatTime(mTimeRemaining);
+                subText = formatTime(app.timeRemaining);
                 infoText = "Back to reset";
                 accentColor = Graphics.COLOR_YELLOW;
             } else {
-                text = formatTime(mTimeRemaining);
+                text = formatTime(app.timeRemaining);
                 subText = "Break";
                 accentColor = Graphics.COLOR_BLUE;
             }
@@ -115,7 +89,7 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         drawClock(dc, cx, (h * 0.07).toNumber());
 
         // Progress bar right below clock, only during countdown
-        if (mState == STATE_FOCUSING || mState == STATE_BREAK) {
+        if (app.state == app.STATE_FOCUSING || app.state == app.STATE_BREAK) {
             drawProgressBar(dc, accentColor, (h * 0.14).toNumber());
         }
 
@@ -128,9 +102,8 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         dc.drawText(cx, (h * 0.42).toNumber(), Graphics.FONT_SMALL, subText, Graphics.TEXT_JUSTIFY_CENTER);
 
         // Additional info for READY state
-        if (mState == STATE_READY) {
+        if (app.state == app.STATE_READY) {
             dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-            
             
             var yPos = (h * 0.58).toNumber();
                         
@@ -163,9 +136,10 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         var barW = (w * 0.55).toNumber();
         var barH = 6;
         var barX = (w - barW) / 2;
-
-        var remaining = mTimeRemaining;
-        var total = (mState == STATE_FOCUSING) ? FOCUS_DURATION : mBreakDuration;
+        
+        var app = getApp();
+        var remaining = app.timeRemaining;
+        var total = (app.state == app.STATE_FOCUSING) ? app.FOCUS_DURATION : app.breakDuration;
         var progress = 1.0 - (remaining.toFloat() / total.toFloat());
         if (progress < 0) { progress = 0; }
         if (progress > 1) { progress = 1; }
@@ -187,135 +161,53 @@ class Stress_AwarePomodoroView extends WatchUi.View {
     }
 
     function onSelect() as Void {
-        if (mState == STATE_READY) {
-            startFocus();
-        } else if (mState == STATE_BREAK_PROMPT) {
-            startBreak();
-        } else if (mState == STATE_FOCUSING || mState == STATE_BREAK) {
-            togglePauseResume();
-        }
-    }
-
-    function onBack() as Boolean {
-        if (mState == STATE_READY) {
-            return false;
-        }
-        if (mIsPaused) {
-            resetToReady();
-            return true;
-        }
-        if (mState == STATE_BREAK_PROMPT) {
-            resetToReady();
-            return true;
-        }
-        return true;
-    }
-
-    function onSkip() as Void {
-        if (mState == STATE_BREAK_PROMPT || mState == STATE_BREAK) {
-            resetToReady();
-        }
-    }
-
-    private function startFocus() as Void {
-        mState = STATE_FOCUSING;
-        mTimeRemaining = FOCUS_DURATION;
-        mIsPaused = false;
-        startTimer();
-        WatchUi.requestUpdate();
-    }
-
-    private function startBreak() as Void {
-        mState = STATE_BREAK;
-        mTimeRemaining = mBreakDuration;
-        mIsPaused = false;
-        startTimer();
-        WatchUi.requestUpdate();
-    }
-
-    private function togglePauseResume() as Void {
-        if (mIsPaused) {
-            mIsPaused = false;
-            startTimer();
-        } else {
-            mIsPaused = true;
-            stopTimer();
-        }
-        WatchUi.requestUpdate();
-    }
-
-    private function startTimer() as Void {
-        if (mTimer == null) {
-            mTimer = new Timer.Timer();
-        }
-        mTimer.start(method(:onTimerTick), 1000, true);
-    }
-
-    private function stopTimer() as Void {
-        if (mTimer != null) {
-            mTimer.stop();
-        }
-    }
-
-    function onTimerTick() as Void {
-        mTimeRemaining = mTimeRemaining - 1;
-        if (mTimeRemaining <= 0) {
-            stopTimer();
-            if (mState == STATE_FOCUSING) {
-                transitionToAnalyzing();
-            } else if (mState == STATE_BREAK) {
-                transitionToReady();
+        var app = getApp();
+        if (app.state == app.STATE_READY) {
+            app.state = app.STATE_FOCUSING;
+            app.timeRemaining = app.FOCUS_DURATION;
+            app.isPaused = false;
+            app.startTimer();
+            WatchUi.requestUpdate();
+        } else if (app.state == app.STATE_BREAK_PROMPT) {
+            app.state = app.STATE_BREAK;
+            app.timeRemaining = app.breakDuration;
+            app.isPaused = false;
+            app.startTimer();
+            WatchUi.requestUpdate();
+        } else if (app.state == app.STATE_FOCUSING || app.state == app.STATE_BREAK) {
+            if (app.isPaused) {
+                app.isPaused = false;
+                app.startTimer();
+            } else {
+                app.isPaused = true;
+                app.stopTimer();
             }
-        } else {
             WatchUi.requestUpdate();
         }
     }
 
-    private function transitionToAnalyzing() as Void {
-        mState = STATE_ANALYZING;
-        WatchUi.requestUpdate();
-
-        vibrateAndTone();
-
-        mSessionCount = mSessionCount + 1;
-
-        var avg = calculateAverageStress();
-        mStressAverage = avg;
-
-        if (mSessionCount % SESSIONS_BEFORE_LONG_BREAK == 0) {
-            mBreakDuration = BREAK_EXTRA_LONG;
-        } else if (avg != null && avg >= 50) {
-            mBreakDuration = BREAK_LONG;
-        } else {
-            mBreakDuration = BREAK_SHORT;
+    function onBack() as Boolean {
+        var app = getApp();
+        if (app.state == app.STATE_READY) {
+            return false; // Let system exit app
         }
-
-        mState = STATE_BREAK_PROMPT;
-        WatchUi.requestUpdate();
+        if (app.isPaused) {
+            app.resetToReady();
+            return true;
+        }
+        if (app.state == app.STATE_BREAK_PROMPT) {
+            app.resetToReady();
+            return true;
+        }
+        // When timer is ACTIVE/RUNNING: let user exit app
+        // Timer will CONTINUE running in background perfectly
+        return false;
     }
 
-    private function transitionToReady() as Void {
-        vibrateAndTone();
-        mState = STATE_READY;
-        mTimeRemaining = 0;
-        mStressAverage = null;
-        mIsPaused = false;
-        WatchUi.requestUpdate();
-    }
-
-    private function resetToReady() as Void {
-        stopTimer();
-        mState = STATE_READY;
-        mTimeRemaining = 0;
-        mStressAverage = null;
-        mIsPaused = false;
-        WatchUi.requestUpdate();
-    }
-
-    private function vibrateAndTone() as Void {
-        Attention.vibrate([new Attention.VibeProfile(50, 1000)]);
-        if (Attention has :playTone) {
-            Attention.playTone(Attention.TONE_ALERT_LO);
+    function onSkip() as Void {
+        var app = getApp();
+        if (app.state == app.STATE_BREAK_PROMPT || app.state == app.STATE_BREAK) {
+            app.resetToReady();
         }
     }
 
@@ -329,28 +221,5 @@ class Stress_AwarePomodoroView extends WatchUi.View {
             return sample.data;
         }
         return null;
-    }
-
-    private function calculateAverageStress() as Number? {
-        var iter = SensorHistory.getStressHistory({:period => 25});
-        if (iter == null) {
-            return null;
-        }
-
-        var sum = 0;
-        var count = 0;
-        var sample = iter.next();
-        while (sample != null) {
-            if (sample.data != null) {
-                sum = sum + sample.data;
-                count = count + 1;
-            }
-            sample = iter.next();
-        }
-
-        if (count == 0) {
-            return null;
-        }
-        return sum / count;
     }
 }
