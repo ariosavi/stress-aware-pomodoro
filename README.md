@@ -28,8 +28,10 @@ A Garmin Connect IQ watch app that combines the classic Pomodoro Technique with 
 | Button | Action |
 |--------|--------|
 | **Start / Select** | Start focus, start break, pause, or resume |
-| **Back** | Reset to Ready (during focus/break/analyzing) / Exit app (from Ready screen) |
+| **Back** | Reset to Ready (only when paused or on break prompt) / Exit app (from Ready screen) |
 | **Down / Next Page** | Skip break and return to Ready |
+
+> **Note:** Reset is intentionally only available when the timer is **paused** or during the **break prompt** to prevent accidental resets while the timer is actively running.
 
 ## Permissions
 

@@ -66,7 +66,7 @@ class Stress_AwarePomodoroView extends WatchUi.View {
             if (mIsPaused) {
                 text = "Paused";
                 subText = formatTime(mTimeRemaining);
-                bottomText = "Press to Resume";
+                bottomText = "Start=Resume  Back=Reset";
                 accentColor = Graphics.COLOR_YELLOW;
             } else {
                 text = formatTime(mTimeRemaining);
@@ -100,7 +100,7 @@ class Stress_AwarePomodoroView extends WatchUi.View {
             if (mIsPaused) {
                 text = "Paused";
                 subText = formatTime(mTimeRemaining);
-                bottomText = "Press to Resume";
+                bottomText = "Start=Resume  Back=Reset";
                 accentColor = Graphics.COLOR_YELLOW;
             } else {
                 text = formatTime(mTimeRemaining);
@@ -194,7 +194,14 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         if (mState == STATE_READY) {
             return false;
         }
-        resetToReady();
+        if (mIsPaused) {
+            resetToReady();
+            return true;
+        }
+        if (mState == STATE_BREAK_PROMPT) {
+            resetToReady();
+            return true;
+        }
         return true;
     }
 
