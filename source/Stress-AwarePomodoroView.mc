@@ -102,24 +102,52 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         dc.drawText(cx, (h * 0.42).toNumber(), Graphics.FONT_SMALL, subText, Graphics.TEXT_JUSTIFY_CENTER);
 
         // Additional info for READY state
+        var yInfoBase = (h * 0.54).toNumber();
+        
         if (app.state == app.STATE_READY) {
             dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
             
-            var yPos = (h * 0.58).toNumber();
-                        
-            dc.drawText(cx, yPos, Graphics.FONT_XTINY, "25 min focus session", Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(cx, yInfoBase, Graphics.FONT_XTINY, "Focus session: 25 min", Graphics.TEXT_JUSTIFY_CENTER);
 
             var currentStress = getCurrentStress();
             if (currentStress != null) {
-                yPos += 40;
                 var stressLevel = currentStress.toNumber();
-                dc.drawText(cx, yPos, Graphics.FONT_XTINY, "Current stress is " + stressLevel, Graphics.TEXT_JUSTIFY_CENTER);                
+                var stressColor = Graphics.COLOR_LT_GRAY;
+                
+                if (stressLevel < 30) {
+                    stressColor = Graphics.COLOR_GREEN;
+                } else if (stressLevel < 60) {
+                    stressColor = Graphics.COLOR_YELLOW;
+                } else {
+                    stressColor = Graphics.COLOR_RED;
+                }
+                
+                dc.setColor(stressColor, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(cx, yInfoBase + 30, Graphics.FONT_XTINY, "Current stress: " + stressLevel, Graphics.TEXT_JUSTIFY_CENTER);                
             }
         } else {
-            // Info text for other states
+            // Info text for running/paused states
             if (infoText.length() > 0) {
                 dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-                dc.drawText(cx, (h * 0.54).toNumber(), Graphics.FONT_XTINY, infoText, Graphics.TEXT_JUSTIFY_CENTER);
+                dc.drawText(cx, yInfoBase, Graphics.FONT_XTINY, infoText, Graphics.TEXT_JUSTIFY_CENTER);
+            }
+            
+            // Always show current stress level when pomodoro is active/paused
+            var currentStress = getCurrentStress();
+            if (currentStress != null) {
+                var stressLevel = currentStress.toNumber();
+                var stressColor = Graphics.COLOR_LT_GRAY;
+                
+                if (stressLevel < 30) {
+                    stressColor = Graphics.COLOR_GREEN;
+                } else if (stressLevel < 60) {
+                    stressColor = Graphics.COLOR_YELLOW;
+                } else {
+                    stressColor = Graphics.COLOR_RED;
+                }
+                
+                dc.setColor(stressColor, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(cx, yInfoBase + 30, Graphics.FONT_XTINY, "Stress: " + stressLevel, Graphics.TEXT_JUSTIFY_CENTER);
             }
         }
     }
