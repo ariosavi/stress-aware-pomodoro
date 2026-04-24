@@ -114,26 +114,26 @@ class Stress_AwarePomodoroView extends WatchUi.View {
             }
         }
 
-        // Clock at top
+        // Clock at very top
         drawClock(dc, cx, (h * 0.07).toNumber());
 
-        // Title - upper portion
-        dc.setColor(accentColor, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, (h * 0.24).toNumber(), Graphics.FONT_LARGE, text, Graphics.TEXT_JUSTIFY_CENTER);
-
-        // Subtitle - middle
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, (h * 0.40).toNumber(), Graphics.FONT_MEDIUM, subText, Graphics.TEXT_JUSTIFY_CENTER);
-
-        // Info text - below subtitle
-        if (infoText.length() > 0) {
-            dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(cx, (h * 0.52).toNumber(), Graphics.FONT_SMALL, infoText, Graphics.TEXT_JUSTIFY_CENTER);
+        // Progress bar right below clock, only during countdown
+        if (mState == STATE_FOCUSING || mState == STATE_BREAK) {
+            drawProgressBar(dc, accentColor, (h * 0.14).toNumber());
         }
 
-        // Progress bar below text, only during countdown
-        if (mState == STATE_FOCUSING || mState == STATE_BREAK) {
-            drawProgressBar(dc, accentColor);
+        // Title
+        dc.setColor(accentColor, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cx, (h * 0.28).toNumber(), Graphics.FONT_LARGE, text, Graphics.TEXT_JUSTIFY_CENTER);
+
+        // Subtitle
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cx, (h * 0.42).toNumber(), Graphics.FONT_MEDIUM, subText, Graphics.TEXT_JUSTIFY_CENTER);
+
+        // Info text
+        if (infoText.length() > 0) {
+            dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(cx, (h * 0.54).toNumber(), Graphics.FONT_SMALL, infoText, Graphics.TEXT_JUSTIFY_CENTER);
         }
     }
 
@@ -144,13 +144,11 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         dc.drawText(cx, y, Graphics.FONT_XTINY, timeString, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
-    private function drawProgressBar(dc as Dc, color as Number) as Void {
+    private function drawProgressBar(dc as Dc, color as Number, barY as Number) as Void {
         var w = dc.getWidth();
-        var h = dc.getHeight();
         var barW = (w * 0.55).toNumber();
         var barH = 6;
         var barX = (w - barW) / 2;
-        var barY = (h * 0.62).toNumber();
 
         var remaining = mTimeRemaining;
         var total = (mState == STATE_FOCUSING) ? FOCUS_DURATION : mBreakDuration;
