@@ -78,7 +78,6 @@ class Stress_AwarePomodoroView extends WatchUi.View {
                 infoText = "Done: " + mSessionCount;
                 accentColor = Graphics.COLOR_GREEN;
             }
-            drawProgressBar(dc, accentColor);
         } else if (mState == STATE_ANALYZING) {
             text = "Analyzing";
             subText = "Reading stress";
@@ -86,15 +85,15 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         } else if (mState == STATE_BREAK_PROMPT) {
             if (mBreakDuration == BREAK_SHORT) {
                 text = "Good job";
-                subText = "Take a 5m break";
+                subText = "5m break";
                 accentColor = Graphics.COLOR_BLUE;
             } else if (mBreakDuration == BREAK_LONG) {
                 text = "High stress";
-                subText = "Take a 10m break";
+                subText = "10m break";
                 accentColor = Graphics.COLOR_RED;
             } else {
                 text = "Great work";
-                subText = "Take a 20m break";
+                subText = "20m break";
                 accentColor = Graphics.COLOR_PURPLE;
             }
             if (mStressAverage != null) {
@@ -110,24 +109,31 @@ class Stress_AwarePomodoroView extends WatchUi.View {
                 accentColor = Graphics.COLOR_YELLOW;
             } else {
                 text = formatTime(mTimeRemaining);
-                subText = "Break time";
+                subText = "Break";
                 accentColor = Graphics.COLOR_BLUE;
             }
-            drawProgressBar(dc, accentColor);
         }
 
-        // Layout positions tuned for round Garmin watches
-        drawClock(dc, cx, (h * 0.10).toNumber());
+        // Clock at top
+        drawClock(dc, cx, (h * 0.07).toNumber());
 
+        // Title
         dc.setColor(accentColor, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, (h * 0.28).toNumber(), Graphics.FONT_LARGE, text, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx, (h * 0.24).toNumber(), Graphics.FONT_LARGE, text, Graphics.TEXT_JUSTIFY_CENTER);
 
+        // Subtitle
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, (h * 0.42).toNumber(), Graphics.FONT_MEDIUM, subText, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx, (h * 0.40).toNumber(), Graphics.FONT_MEDIUM, subText, Graphics.TEXT_JUSTIFY_CENTER);
 
+        // Info text
         if (infoText.length() > 0) {
             dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(cx, (h * 0.54).toNumber(), Graphics.FONT_SMALL, infoText, Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(cx, (h * 0.52).toNumber(), Graphics.FONT_SMALL, infoText, Graphics.TEXT_JUSTIFY_CENTER);
+        }
+
+        // Progress bar below text, only during countdown
+        if (mState == STATE_FOCUSING || mState == STATE_BREAK) {
+            drawProgressBar(dc, accentColor);
         }
     }
 
@@ -141,10 +147,10 @@ class Stress_AwarePomodoroView extends WatchUi.View {
     private function drawProgressBar(dc as Dc, color as Number) as Void {
         var w = dc.getWidth();
         var h = dc.getHeight();
-        var barW = (w * 0.45).toNumber();
-        var barH = 5;
+        var barW = (w * 0.55).toNumber();
+        var barH = 6;
         var barX = (w - barW) / 2;
-        var barY = (h * 0.68).toNumber();
+        var barY = (h * 0.62).toNumber();
 
         var remaining = mTimeRemaining;
         var total = (mState == STATE_FOCUSING) ? FOCUS_DURATION : mBreakDuration;
