@@ -41,7 +41,8 @@ class Stress_AwarePomodoroView extends WatchUi.View {
             if (app.isPaused) {
                 text = "Paused";
                 subText = formatTime(app.timeRemaining);
-                infoText = "Back to reset";
+                infoText = "";
+                infoText = "";
                 accentColor = Graphics.COLOR_YELLOW;
             } else {
                 text = formatTime(app.timeRemaining);
@@ -76,7 +77,7 @@ class Stress_AwarePomodoroView extends WatchUi.View {
             if (app.isPaused) {
                 text = "Paused";
                 subText = formatTime(app.timeRemaining);
-                infoText = "Back to reset";
+                infoText = "";
                 accentColor = Graphics.COLOR_YELLOW;
             } else {
                 text = formatTime(app.timeRemaining);
@@ -195,14 +196,17 @@ class Stress_AwarePomodoroView extends WatchUi.View {
             app.timeRemaining = app.FOCUS_DURATION;
             app.isPaused = false;
             app.startTimer();
+            app.vibrateStart();
             WatchUi.requestUpdate();
         } else if (app.state == app.STATE_BREAK_PROMPT) {
             app.state = app.STATE_BREAK;
             app.timeRemaining = app.breakDuration;
             app.isPaused = false;
             app.startTimer();
+            app.vibrateStart();
             WatchUi.requestUpdate();
         } else if (app.state == app.STATE_FOCUSING || app.state == app.STATE_BREAK) {
+            app.vibratePause();
             if (app.isPaused) {
                 app.isPaused = false;
                 app.startTimer();
@@ -216,19 +220,10 @@ class Stress_AwarePomodoroView extends WatchUi.View {
 
     function onBack() as Boolean {
         var app = getApp();
-        if (app.state == app.STATE_READY) {
-            return false; // Let system exit app
-        }
-        if (app.isPaused) {
-            app.resetToReady();
-            return true;
-        }
-        if (app.state == app.STATE_BREAK_PROMPT) {
-            app.resetToReady();
-            return true;
-        }
-        // When timer is ACTIVE/RUNNING: let user exit app
-        // Timer will CONTINUE running in background perfectly
+        
+        // ✅ ALWAYS let user exit app normally without resetting anything
+        // ✅ Timer keeps running perfectly in background
+        // ✅ No reset ever happens on back button press!
         return false;
     }
 

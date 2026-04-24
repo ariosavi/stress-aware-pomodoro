@@ -88,7 +88,8 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
 
     function transitionToAnalyzing() as Void {
         state = STATE_ANALYZING;
-        vibrateAndTone();
+        vibrateComplete();
+        vibrateComplete();
         sessionCount = sessionCount + 1;
 
         var avg = calculateAverageStress();
@@ -107,7 +108,7 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
     }
 
     function transitionToReady() as Void {
-        vibrateAndTone();
+        vibrateComplete();
         state = STATE_READY;
         timeRemaining = 0;
         stressAverage = null;
@@ -124,10 +125,31 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
         WatchUi.requestUpdate();
     }
 
-    private function vibrateAndTone() as Void {
-        Attention.vibrate([new Attention.VibeProfile(50, 1000)]);
+    public function vibrateStart() as Void {
+        // Short single vibration for START
+        Attention.vibrate([new Attention.VibeProfile(40, 80)]);
         if (Attention has :playTone) {
             Attention.playTone(Attention.TONE_ALERT_LO);
+        }
+    }
+    
+    public function vibratePause() as Void {
+        // Double short vibration for PAUSE
+        Attention.vibrate([
+            new Attention.VibeProfile(30, 60),
+            new Attention.VibeProfile(0, 60),
+            new Attention.VibeProfile(30, 60)
+        ]);
+        if (Attention has :playTone) {
+            Attention.playTone(Attention.TONE_ALERT_HI);
+        }
+    }
+    
+    public function vibrateComplete() as Void {
+        // Long vibration for SESSION END
+        Attention.vibrate([new Attention.VibeProfile(60, 350)]);
+        if (Attention has :playTone) {
+            Attention.playTone(Attention.TONE_ALERT_HI);
         }
     }
 
