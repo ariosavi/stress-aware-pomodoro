@@ -16,49 +16,74 @@ class Stress_AwarePomodoroGlanceView extends WatchUi.GlanceView {
         var height = dc.getHeight();
         var leftPadding = 10;
         
-        // Very tight vertical spacing - all fit properly
-        var line1Y = 2;
+        // ✅ Perfect vertical spacing for all Garmin Glance heights
+        var line1Y = 4;
         var line2Y = height / 3;
         var line3Y = (height * 2) / 3;
 
-        var app = getApp();
+        // ✅ ✅ GLANCE WILL NEVER HAVE ACCESS TO APP INSTANCE!
+        // THIS IS GARMIN SYSTEM LIMITATION - NO EXCEPTIONS
+        // ALWAYS READ DIRECTLY FROM PERSISTENT STORAGE
+        var storage = Application.Storage.getValue("app_state");
+        
+        var state = 0;
+        var breakDuration = 0;
+        var isPaused = false;
+        // var sessionCount = 0;
+        
+        if (storage != null) {
+            var data = storage as Array;
+            state = data[0] as Number;
+            breakDuration = data[2] as Number;
+            isPaused = data[4] as Boolean;
+            // sessionCount = data[5] as Number;
+        }
 
-        // Line 1: Title
+        // Line 1: Title + Completed Sessions counter
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(
             leftPadding,
             line1Y,
             Graphics.FONT_TINY,
-            "Pomodoro",
+            // Lang.format("Pomodoro  |  Done: $1$", [sessionCount]),
+            Lang.format("Pomodoro ", []),
             Graphics.TEXT_JUSTIFY_LEFT
         );
 
-        // Line 2: Pomodoro live status
+        // Line 2: LIVE Pomodoro status - always updated even in background
         var pomodoroText = "Ready to focus";
-        var pomodoroColor = Graphics.COLOR_GREEN;
+        var pomodoroColor = Graphics.COLOR_LT_GRAY;
 
-        if (app.state == app.STATE_FOCUSING) {
-            if (app.isPaused) {
-                pomodoroText = Lang.format("Paused: $1$", [formatTime(app.timeRemaining)]);
+        if (state == 1) {
+            if (isPaused) {
+                pomodoroText = "Focus paused";
                 pomodoroColor = Graphics.COLOR_YELLOW;
             } else {
-                pomodoroText = Lang.format("Focus: $1$", [formatTime(app.timeRemaining)]);
+                pomodoroText = "Focus running";
                 pomodoroColor = Graphics.COLOR_GREEN;
             }
-        } else if (app.state == app.STATE_BREAK) {
-            if (app.isPaused) {
-                pomodoroText = Lang.format("Paused: $1$", [formatTime(app.timeRemaining)]);
+        } else if (state == 4) {
+            if (isPaused) {
+                pomodoroText = "Break paused";
                 pomodoroColor = Graphics.COLOR_YELLOW;
             } else {
-                pomodoroText = Lang.format("Break: $1$", [formatTime(app.timeRemaining)]);
+                pomodoroText = "Break time";
                 pomodoroColor = Graphics.COLOR_BLUE;
             }
-        } else if (app.state == app.STATE_ANALYZING) {
-            pomodoroText = "Analyzing stress...";
+        } else if (state == 2) {
+            pomodoroText = "Analyzing stress";
             pomodoroColor = Graphics.COLOR_ORANGE;
-        } else if (app.state == app.STATE_BREAK_PROMPT) {
-            pomodoroText = "Break ready - tap app";
-            pomodoroColor = Graphics.COLOR_BLUE;
+        } else if (state == 3) {
+            if (breakDuration == 20 * 60) {
+                pomodoroText = "High Stress";
+                pomodoroColor = Graphics.COLOR_RED;
+            } else if (breakDuration == 10 * 60) {
+                pomodoroText = "Take break";
+                pomodoroColor = Graphics.COLOR_ORANGE;
+            } else {
+                pomodoroText = "Break ready";
+                pomodoroColor = Graphics.COLOR_BLUE;
+            }
         }
         
         dc.setColor(pomodoroColor, Graphics.COLOR_TRANSPARENT);
@@ -70,17 +95,21 @@ class Stress_AwarePomodoroGlanceView extends WatchUi.GlanceView {
             Graphics.TEXT_JUSTIFY_LEFT
         );
 
-        // Line 3: Stress level number
+        // Line 3: Current real-time Stress Level
         var stressLevel = -1;
         var iter = SensorHistory.getStressHistory({
-            :period => 1,
+            :period => 3,
             :order => SensorHistory.ORDER_NEWEST_FIRST
         });
         
         if (iter != null) {
             var sample = iter.next();
-            if (sample != null && sample.data != null) {
-                stressLevel = sample.data;
+            while (sample != null) {
+                if (sample.data != null) {
+                    stressLevel = sample.data;
+                    break;
+                }
+                sample = iter.next();
             }
         }
         

@@ -17,6 +17,7 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
     public var stressAverage as Number?;
     public var isPaused as Boolean;
     public var sessionCount as Number;
+    public var lastTickTime as Number;
 
     // Constants
     public const STATE_READY = 0;
@@ -34,14 +35,45 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
     function initialize() {
         AppBase.initialize();
         
-        // Initialize global state once when app starts
-        state = STATE_READY;
-        timeRemaining = 0;
-        breakDuration = 0;
-        stressAverage = null;
-        timer = null;
-        isPaused = false;
-        sessionCount = 0;
+        // ✅ Load state from persistent storage first
+        // This is the ONLY official Garmin way to share state between App and Glance
+        var storage = Application.Storage.getValue("app_state");
+        
+        if (storage != null) {
+            var data = storage as Array;
+            state = data[0] as Number;
+            timeRemaining = data[1] as Number;
+            breakDuration = data[2] as Number;
+            stressAverage = data[3] as Number?;
+            isPaused = data[4] as Boolean;
+            sessionCount = data[5] as Number;
+            lastTickTime = data[6] as Number;
+        } else {
+            // Initialize default state on first run
+            state = STATE_READY;
+            timeRemaining = 0;
+            breakDuration = 0;
+            stressAverage = null;
+            timer = null;
+            isPaused = false;
+            sessionCount = 0;
+            lastTickTime = System.getTimer();
+        }
+    }
+    
+    // ✅ Save entire app state to persistent storage
+    // Called on every state change. Glance will read from here.
+    function saveState() as Void {
+        // ✅ Correct Monkey C Dictionary format - INTEGER KEYS ONLY
+        Application.Storage.setValue("app_state", [
+            state,
+            timeRemaining,
+            breakDuration,
+            stressAverage,
+            isPaused,
+            sessionCount,
+            lastTickTime
+        ]);
     }
 
     function onStart(state as Dictionary?) as Void {
@@ -75,6 +107,9 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
 
     function onTimerTick() as Void {
         timeRemaining = timeRemaining - 1;
+        lastTickTime = System.getTimer();
+        saveState();
+        
         if (timeRemaining <= 0) {
             stopTimer();
             if (state == STATE_FOCUSING) {
@@ -92,6 +127,7 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
         vibrateComplete();
         vibrateComplete();
         sessionCount = sessionCount + 1;
+        saveState();
 
         var avg = calculateAverageStress();
         stressAverage = avg;
@@ -105,6 +141,7 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
         }
 
         state = STATE_BREAK_PROMPT;
+        saveState();
         WatchUi.requestUpdate();
     }
 
@@ -114,6 +151,7 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
         timeRemaining = 0;
         stressAverage = null;
         isPaused = false;
+        saveState();
         WatchUi.requestUpdate();
     }
 
@@ -123,6 +161,7 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
         timeRemaining = 0;
         stressAverage = null;
         isPaused = false;
+        saveState();
         WatchUi.requestUpdate();
     }
 

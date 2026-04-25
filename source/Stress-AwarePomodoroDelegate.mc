@@ -107,6 +107,7 @@ class PomodoroMenuDelegate extends WatchUi.BehaviorDelegate {
                     app.isPaused = true;
                     app.stopTimer();
                     app.vibratePause();
+                    app.saveState();
                 }
                 break;
 
@@ -115,6 +116,7 @@ class PomodoroMenuDelegate extends WatchUi.BehaviorDelegate {
                     app.isPaused = false;
                     app.startTimer();
                     app.vibratePause();
+                    app.saveState();
                 }
                 break;
 
