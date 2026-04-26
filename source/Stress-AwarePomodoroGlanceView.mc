@@ -49,7 +49,7 @@ class Stress_AwarePomodoroGlanceView extends WatchUi.GlanceView {
             leftPadding,
             line1Y,
             Graphics.FONT_TINY,
-            // Lang.format("Pomodoro  |  Done: $1$", [sessionCount]),
+            // Lang.format("Pomodoro  |  Completed: $1$", [sessionCount]),
             Lang.format("Pomodoro ", []),
             Graphics.TEXT_JUSTIFY_LEFT
         );

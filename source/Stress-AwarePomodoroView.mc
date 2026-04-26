@@ -48,7 +48,7 @@ class Stress_AwarePomodoroView extends WatchUi.View {
             } else {
                 text = formatTime(app.timeRemaining);
                 subText = "Focusing";
-                infoText = "Done: " + app.sessionCount;
+                infoText = "Completed: " + app.sessionCount;
                 accentColor = Graphics.COLOR_GREEN;
             }
         } else if (app.state == app.STATE_ANALYZING) {
@@ -70,7 +70,7 @@ class Stress_AwarePomodoroView extends WatchUi.View {
                 subText = breakMinutes + "m break";
                 accentColor = Graphics.COLOR_PURPLE;
             }
-            infoText = "Completed: " + app.sessionCount + (app.stressAverage != null ? ", Avg stress: " + Math.round(app.stressAverage).toNumber() : "");
+            infoText = "Completed: " + app.sessionCount;
         } else if (app.state == app.STATE_BREAK) {
             if (app.isPaused) {
                 text = "Paused";
@@ -136,22 +136,27 @@ class Stress_AwarePomodoroView extends WatchUi.View {
                 dc.drawText(cx, yInfoBase, Graphics.FONT_XTINY, infoText, Graphics.TEXT_JUSTIFY_CENTER);
             }
             
-            // Always show current stress level when pomodoro is active/paused
-            var currentStress = getCurrentStress();
-            if (currentStress != null) {
-                var stressLevel = Math.round(currentStress).toNumber();
-                var stressColor = Graphics.COLOR_LT_GRAY;
+            // Show average stress in break prompt, current stress otherwise
+            if (app.state == app.STATE_BREAK_PROMPT && app.stressAverage != null) {
+                dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(cx, yInfoBase + 30, Graphics.FONT_XTINY, "Avg stress: " + Math.round(app.stressAverage).toNumber(), Graphics.TEXT_JUSTIFY_CENTER);
+            } else {
+                var currentStress = getCurrentStress();
+                if (currentStress != null) {
+                    var stressLevel = Math.round(currentStress).toNumber();
+                    var stressColor = Graphics.COLOR_LT_GRAY;
 
-                if (stressLevel < 30) {
-                    stressColor = Graphics.COLOR_GREEN;
-                } else if (stressLevel < 60) {
-                    stressColor = Graphics.COLOR_YELLOW;
-                } else {
-                    stressColor = Graphics.COLOR_RED;
+                    if (stressLevel < 30) {
+                        stressColor = Graphics.COLOR_GREEN;
+                    } else if (stressLevel < 60) {
+                        stressColor = Graphics.COLOR_YELLOW;
+                    } else {
+                        stressColor = Graphics.COLOR_RED;
+                    }
+
+                    dc.setColor(stressColor, Graphics.COLOR_TRANSPARENT);
+                    dc.drawText(cx, yInfoBase + 30, Graphics.FONT_XTINY, "Stress: " + stressLevel, Graphics.TEXT_JUSTIFY_CENTER);
                 }
-
-                dc.setColor(stressColor, Graphics.COLOR_TRANSPARENT);
-                dc.drawText(cx, yInfoBase + 30, Graphics.FONT_XTINY, "Stress: " + stressLevel, Graphics.TEXT_JUSTIFY_CENTER);
             }
         }
     }
@@ -159,16 +164,18 @@ class Stress_AwarePomodoroView extends WatchUi.View {
     private function drawClock(dc as Dc, cx as Number, y as Number) as Void {
         var clockTime = System.getClockTime();
         var timeString = Lang.format("$1$:$2$", [clockTime.hour.format("%02d"), clockTime.min.format("%02d")]);
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
         dc.drawText(cx, y, Graphics.FONT_XTINY, timeString, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
     private function drawProgressBar(dc as Dc, color as Number, barY as Number) as Void {
         var w = dc.getWidth();
-        var barW = (w * 0.55).toNumber();
-        var barH = 6;
-        var barX = (w - barW) / 2;
-        
+        var h = dc.getHeight();
+        var cx = w / 2;
+        var cy = h / 2;
+        var radius = cx - 3; // Stick to edges with small margin
+        var thickness = 12; // Thicker ring
+
         var app = getApp();
         var remaining = app.timeRemaining;
         var total = (app.state == app.STATE_FOCUSING) ? (app.focusDurationMinutes * 60) : app.breakDuration;
@@ -176,14 +183,16 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         if (progress < 0) { progress = 0; }
         if (progress > 1) { progress = 1; }
 
-        var fillW = (barW * progress).toNumber();
-        if (fillW < 1) { fillW = 1; }
+        var sweepAngle = progress * 360.0;
 
+        // Draw background arc (full circle)
+        dc.setPenWidth(thickness);
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.fillRectangle(barX, barY, barW, barH);
+        dc.drawArc(cx, cy, radius, Graphics.ARC_CLOCKWISE, 90, 450); // 90 to 450 (90 + 360) for full circle
 
+        // Draw progress arc
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
-        dc.fillRectangle(barX, barY, fillW, barH);
+        dc.drawArc(cx, cy, radius, Graphics.ARC_CLOCKWISE, 90, (90 + sweepAngle).toNumber());
     }
 
     private function formatTime(seconds as Number) as String {
