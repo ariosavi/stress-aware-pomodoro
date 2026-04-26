@@ -8,4 +8,17 @@
     <string id="menu_reset">Reset</string>
     <string id="menu_skip_break">Skip Break</string>
     <string id="menu_exit">Exit</string>
+
+    <!-- Settings -->
+    <string id="FocusDurationTitle">Focus Session Duration (minutes)</string>
+    <string id="BreakShortTitle">Short Break Duration (minutes)</string>
+    <string id="BreakLongTitle">Long Break Duration (minutes)</string>
+    <string id="BreakExtraLongTitle">Extra Long Break Duration (minutes)</string>
+    <string id="SessionsBeforeLongBreakTitle">Sessions Before Extra Long Break</string>
+    <string id="StressThresholdTitle">High Stress Threshold (0-100)</string>
+    <string id="EnableSoundTitle">Enable Sound Alerts</string>
+    <string id="VibrationLevelTitle">Vibration Level</string>
+    <string id="VibrationNone">None</string>
+    <string id="VibrationNormal">Normal</string>
+    <string id="VibrationLong">Long</string>
 </strings>

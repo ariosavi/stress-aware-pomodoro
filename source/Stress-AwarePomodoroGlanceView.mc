@@ -25,12 +25,12 @@ class Stress_AwarePomodoroGlanceView extends WatchUi.GlanceView {
         // THIS IS GARMIN SYSTEM LIMITATION - NO EXCEPTIONS
         // ALWAYS READ DIRECTLY FROM PERSISTENT STORAGE
         var storage = Application.Storage.getValue("app_state");
-        
+
         var state = 0;
         var breakDuration = 0;
         var isPaused = false;
         // var sessionCount = 0;
-        
+
         if (storage != null) {
             var data = storage as Array;
             state = data[0] as Number;
@@ -38,6 +38,10 @@ class Stress_AwarePomodoroGlanceView extends WatchUi.GlanceView {
             isPaused = data[4] as Boolean;
             // sessionCount = data[5] as Number;
         }
+
+        // Load break duration settings for comparison
+        var breakLongMin = Application.Properties.getValue("BreakLongMinutes") as Number;
+        var breakExtraLongMin = Application.Properties.getValue("BreakExtraLongMinutes") as Number;
 
         // Line 1: Title + Completed Sessions counter
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
@@ -74,10 +78,10 @@ class Stress_AwarePomodoroGlanceView extends WatchUi.GlanceView {
             pomodoroText = "Analyzing stress";
             pomodoroColor = Graphics.COLOR_ORANGE;
         } else if (state == 3) {
-            if (breakDuration == 20 * 60) {
+            if (breakDuration == breakExtraLongMin * 60) {
                 pomodoroText = "High Stress";
                 pomodoroColor = Graphics.COLOR_RED;
-            } else if (breakDuration == 10 * 60) {
+            } else if (breakDuration == breakLongMin * 60) {
                 pomodoroText = "Take break";
                 pomodoroColor = Graphics.COLOR_ORANGE;
             } else {
@@ -117,11 +121,12 @@ class Stress_AwarePomodoroGlanceView extends WatchUi.GlanceView {
         var stressColor = 0xAAAAAA;
         
         if (stressLevel >= 0) {
-            stressText = Lang.format("Stress: $1$", [stressLevel.toNumber()]);
-            
-            if (stressLevel < 30) {
+            var stressInt = Math.round(stressLevel).toNumber();
+            stressText = Lang.format("Stress: $1$", [stressInt]);
+
+            if (stressInt < 30) {
                 stressColor = Graphics.COLOR_GREEN;
-            } else if (stressLevel < 60) {
+            } else if (stressInt < 60) {
                 stressColor = Graphics.COLOR_YELLOW;
             } else {
                 stressColor = Graphics.COLOR_RED;

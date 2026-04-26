@@ -19,6 +19,16 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
     public var sessionCount as Number;
     public var lastTickTime as Number;
 
+    // Settings
+    public var focusDurationMinutes as Number;
+    public var breakShortMinutes as Number;
+    public var breakLongMinutes as Number;
+    public var breakExtraLongMinutes as Number;
+    public var sessionsBeforeLongBreak as Number;
+    public var stressThreshold as Number;
+    public var vibrationLevel as Number;
+    public var enableSound as Boolean;
+
     // Constants
     public const STATE_READY = 0;
     public const STATE_FOCUSING = 1;
@@ -26,19 +36,23 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
     public const STATE_BREAK_PROMPT = 3;
     public const STATE_BREAK = 4;
 
-    public const FOCUS_DURATION = 25 * 60;
-    public const BREAK_SHORT = 5 * 60;
-    public const BREAK_LONG = 10 * 60;
-    public const BREAK_EXTRA_LONG = 20 * 60;
-    public const SESSIONS_BEFORE_LONG_BREAK = 4;
-
     function initialize() {
         AppBase.initialize();
-        
+
+        // Load settings from properties
+        focusDurationMinutes = Application.Properties.getValue("FocusDurationMinutes") as Number;
+        breakShortMinutes = Application.Properties.getValue("BreakShortMinutes") as Number;
+        breakLongMinutes = Application.Properties.getValue("BreakLongMinutes") as Number;
+        breakExtraLongMinutes = Application.Properties.getValue("BreakExtraLongMinutes") as Number;
+        sessionsBeforeLongBreak = Application.Properties.getValue("SessionsBeforeLongBreak") as Number;
+        stressThreshold = Application.Properties.getValue("StressThreshold") as Number;
+        vibrationLevel = Application.Properties.getValue("VibrationLevel") as Number;
+        enableSound = Application.Properties.getValue("EnableSound") as Boolean;
+
         // ✅ Load state from persistent storage first
         // This is the ONLY official Garmin way to share state between App and Glance
         var storage = Application.Storage.getValue("app_state");
-        
+
         if (storage != null) {
             var data = storage as Array;
             state = data[0] as Number;
@@ -80,6 +94,22 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
     }
 
     function onStop(state as Dictionary?) as Void {
+    }
+
+    function onSettingsChanged() as Void {
+        focusDurationMinutes = Application.Properties.getValue("FocusDurationMinutes") as Number;
+        breakShortMinutes = Application.Properties.getValue("BreakShortMinutes") as Number;
+        breakLongMinutes = Application.Properties.getValue("BreakLongMinutes") as Number;
+        breakExtraLongMinutes = Application.Properties.getValue("BreakExtraLongMinutes") as Number;
+        sessionsBeforeLongBreak = Application.Properties.getValue("SessionsBeforeLongBreak") as Number;
+        stressThreshold = Application.Properties.getValue("StressThreshold") as Number;
+        vibrationLevel = Application.Properties.getValue("VibrationLevel") as Number;
+        enableSound = Application.Properties.getValue("EnableSound") as Boolean;
+
+        // Refresh UI if in READY state to show updated settings
+        if (state == STATE_READY) {
+            WatchUi.requestUpdate();
+        }
     }
 
     function getInitialView() as [Views] or [Views, InputDelegates] {
@@ -132,12 +162,12 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
         var avg = calculateAverageStress();
         stressAverage = avg;
 
-        if (sessionCount % SESSIONS_BEFORE_LONG_BREAK == 0) {
-            breakDuration = BREAK_EXTRA_LONG;
-        } else if (avg != null && avg >= 50) {
-            breakDuration = BREAK_LONG;
+        if (sessionCount % sessionsBeforeLongBreak == 0) {
+            breakDuration = breakExtraLongMinutes * 60;
+        } else if (avg != null && avg >= stressThreshold) {
+            breakDuration = breakLongMinutes * 60;
         } else {
-            breakDuration = BREAK_SHORT;
+            breakDuration = breakShortMinutes * 60;
         }
 
         state = STATE_BREAK_PROMPT;
@@ -166,29 +196,33 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
     }
 
     public function vibrateStart() as Void {
-        // Short single vibration for START
-        Attention.vibrate([new Attention.VibeProfile(40, 80)]);
-        if (Attention has :playTone) {
+        if (vibrationLevel == 0) { return; }
+        var duration = (vibrationLevel == 1) ? 80 : 120;
+        Attention.vibrate([new Attention.VibeProfile(40, duration)]);
+        if (Attention has :playTone && enableSound) {
             Attention.playTone(Attention.TONE_ALERT_LO);
         }
     }
     
     public function vibratePause() as Void {
-        // Double short vibration for PAUSE
+        if (vibrationLevel == 0) { return; }
+        var intensity = (vibrationLevel == 1) ? 30 : 50;
+        var duration = (vibrationLevel == 1) ? 60 : 90;
         Attention.vibrate([
-            new Attention.VibeProfile(30, 60),
-            new Attention.VibeProfile(0, 60),
-            new Attention.VibeProfile(30, 60)
+            new Attention.VibeProfile(intensity, duration),
+            new Attention.VibeProfile(0, duration),
+            new Attention.VibeProfile(intensity, duration)
         ]);
-        if (Attention has :playTone) {
+        if (Attention has :playTone && enableSound) {
             Attention.playTone(Attention.TONE_ALERT_HI);
         }
     }
     
     public function vibrateComplete() as Void {
-        // Long vibration for SESSION END
-        Attention.vibrate([new Attention.VibeProfile(60, 350)]);
-        if (Attention has :playTone) {
+        if (vibrationLevel == 0) { return; }
+        var duration = (vibrationLevel == 1) ? 350 : 500;
+        Attention.vibrate([new Attention.VibeProfile(60, duration)]);
+        if (Attention has :playTone && enableSound) {
             Attention.playTone(Attention.TONE_ALERT_HI);
         }
     }
@@ -197,12 +231,12 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
         // Get last 27 minutes (9 samples x 3min) to cover exactly full focus session
         var iter = SensorHistory.getStressHistory({:period => 27});
 
-        var sum = 0;
+        var sum = 0.0;
         var count = 0;
         var sample = iter.next();
         while (sample != null) {
             if (sample.data != null) {
-                sum = sum + sample.data;
+                sum = sum + sample.data.toFloat();
                 count = count + 1;
             }
             sample = iter.next();
@@ -211,7 +245,7 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
         if (count == 0) {
             return null;
         }
-        return sum / count;
+        return Math.round(sum / count).toNumber();
     }
 }
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<properties>
+    <property id="FocusDurationMinutes" type="number">25</property>
+    <property id="BreakShortMinutes" type="number">5</property>
+    <property id="BreakLongMinutes" type="number">10</property>
+    <property id="BreakExtraLongMinutes" type="number">20</property>
+    <property id="SessionsBeforeLongBreak" type="number">4</property>
+    <property id="StressThreshold" type="number">50</property>
+    <property id="VibrationLevel" type="number">1</property>
+    <property id="EnableSound" type="boolean">true</property>
+</properties>

@@ -55,21 +55,22 @@ class Stress_AwarePomodoroView extends WatchUi.View {
             subText = "Reading stress";
             accentColor = Graphics.COLOR_ORANGE;
         } else if (app.state == app.STATE_BREAK_PROMPT) {
-            if (app.breakDuration == app.BREAK_SHORT) {
+            var breakMinutes = app.breakDuration / 60;
+            if (breakMinutes == app.breakShortMinutes) {
                 text = "Good job";
-                subText = "5m break";
+                subText = breakMinutes + "m break";
                 accentColor = Graphics.COLOR_BLUE;
-            } else if (app.breakDuration == app.BREAK_LONG) {
+            } else if (breakMinutes == app.breakLongMinutes) {
                 text = "High stress";
-                subText = "10m break";
+                subText = breakMinutes + "m break";
                 accentColor = Graphics.COLOR_RED;
             } else {
                 text = "Great work";
-                subText = "20m break";
+                subText = breakMinutes + "m break";
                 accentColor = Graphics.COLOR_PURPLE;
             }
             if (app.stressAverage != null) {
-                infoText = "Avg stress: " + app.stressAverage;
+                infoText = "Avg stress: " + Math.round(app.stressAverage).toNumber();
             } else {
                 infoText = "Press Start";
             }
@@ -108,13 +109,13 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         if (app.state == app.STATE_READY) {
             dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
             
-            dc.drawText(cx, yInfoBase, Graphics.FONT_XTINY, "Focus session: 25 min", Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(cx, yInfoBase, Graphics.FONT_XTINY, "Focus session: " + app.focusDurationMinutes + " min", Graphics.TEXT_JUSTIFY_CENTER);
 
             var currentStress = getCurrentStress();
             if (currentStress != null) {
-                var stressLevel = currentStress.toNumber();
+                var stressLevel = Math.round(currentStress).toNumber();
                 var stressColor = Graphics.COLOR_LT_GRAY;
-                
+
                 if (stressLevel < 30) {
                     stressColor = Graphics.COLOR_GREEN;
                 } else if (stressLevel < 60) {
@@ -122,9 +123,9 @@ class Stress_AwarePomodoroView extends WatchUi.View {
                 } else {
                     stressColor = Graphics.COLOR_RED;
                 }
-                
+
                 dc.setColor(stressColor, Graphics.COLOR_TRANSPARENT);
-                dc.drawText(cx, yInfoBase + 30, Graphics.FONT_XTINY, "Current stress: " + stressLevel, Graphics.TEXT_JUSTIFY_CENTER);                
+                dc.drawText(cx, yInfoBase + 30, Graphics.FONT_XTINY, "Current stress: " + stressLevel, Graphics.TEXT_JUSTIFY_CENTER);
             }
         } else {
             // Info text for running/paused states
@@ -136,9 +137,9 @@ class Stress_AwarePomodoroView extends WatchUi.View {
             // Always show current stress level when pomodoro is active/paused
             var currentStress = getCurrentStress();
             if (currentStress != null) {
-                var stressLevel = currentStress.toNumber();
+                var stressLevel = Math.round(currentStress).toNumber();
                 var stressColor = Graphics.COLOR_LT_GRAY;
-                
+
                 if (stressLevel < 30) {
                     stressColor = Graphics.COLOR_GREEN;
                 } else if (stressLevel < 60) {
@@ -146,7 +147,7 @@ class Stress_AwarePomodoroView extends WatchUi.View {
                 } else {
                     stressColor = Graphics.COLOR_RED;
                 }
-                
+
                 dc.setColor(stressColor, Graphics.COLOR_TRANSPARENT);
                 dc.drawText(cx, yInfoBase + 30, Graphics.FONT_XTINY, "Stress: " + stressLevel, Graphics.TEXT_JUSTIFY_CENTER);
             }
@@ -168,7 +169,7 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         
         var app = getApp();
         var remaining = app.timeRemaining;
-        var total = (app.state == app.STATE_FOCUSING) ? app.FOCUS_DURATION : app.breakDuration;
+        var total = (app.state == app.STATE_FOCUSING) ? (app.focusDurationMinutes * 60) : app.breakDuration;
         var progress = 1.0 - (remaining.toFloat() / total.toFloat());
         if (progress < 0) { progress = 0; }
         if (progress > 1) { progress = 1; }

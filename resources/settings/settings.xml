@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <!-- Timing -->
+    <setting propertyKey="@Properties.FocusDurationMinutes" title="@Strings.FocusDurationTitle">
+        <settingConfig type="numeric" min="1" max="90" />
+    </setting>
+
+    <!-- Break Durations -->
+    <setting propertyKey="@Properties.BreakShortMinutes" title="@Strings.BreakShortTitle">
+        <settingConfig type="numeric" min="1" max="15" />
+    </setting>
+    <setting propertyKey="@Properties.BreakLongMinutes" title="@Strings.BreakLongTitle">
+        <settingConfig type="numeric" min="1" max="30" />
+    </setting>
+    <setting propertyKey="@Properties.BreakExtraLongMinutes" title="@Strings.BreakExtraLongTitle">
+        <settingConfig type="numeric" min="1" max="60" />
+    </setting>
+
+    <!-- Session Cycle -->
+    <setting propertyKey="@Properties.SessionsBeforeLongBreak" title="@Strings.SessionsBeforeLongBreakTitle">
+        <settingConfig type="numeric" min="2" max="8" />
+    </setting>
+
+    <!-- Stress Threshold -->
+    <setting propertyKey="@Properties.StressThreshold" title="@Strings.StressThresholdTitle">
+        <settingConfig type="numeric" min="30" max="80" />
+    </setting>
+
+    <!-- Alerts -->
+    <setting propertyKey="@Properties.VibrationLevel" title="@Strings.VibrationLevelTitle">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.VibrationNone</listEntry>
+            <listEntry value="1">@Strings.VibrationNormal</listEntry>
+            <listEntry value="2">@Strings.VibrationLong</listEntry>
+        </settingConfig>
+    </setting>
+    <setting propertyKey="@Properties.EnableSound" title="@Strings.EnableSoundTitle">
+        <settingConfig type="boolean" />
+    </setting>
+</settings>
