@@ -36,6 +36,7 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         if (app.state == app.STATE_READY) {
             text = "Ready";
             subText = "Press Start";
+            infoText = "Completed: " + app.sessionCount;
             accentColor = Graphics.COLOR_GREEN;
         } else if (app.state == app.STATE_FOCUSING) {
             if (app.isPaused) {
@@ -69,20 +70,17 @@ class Stress_AwarePomodoroView extends WatchUi.View {
                 subText = breakMinutes + "m break";
                 accentColor = Graphics.COLOR_PURPLE;
             }
-            if (app.stressAverage != null) {
-                infoText = "Avg stress: " + Math.round(app.stressAverage).toNumber();
-            } else {
-                infoText = "Press Start";
-            }
+            infoText = "Completed: " + app.sessionCount + (app.stressAverage != null ? ", Avg stress: " + Math.round(app.stressAverage).toNumber() : "");
         } else if (app.state == app.STATE_BREAK) {
             if (app.isPaused) {
                 text = "Paused";
                 subText = formatTime(app.timeRemaining);
-                infoText = "";
+                infoText = "Completed: " + app.sessionCount;
                 accentColor = Graphics.COLOR_YELLOW;
             } else {
                 text = formatTime(app.timeRemaining);
                 subText = "Break";
+                infoText = "Completed: " + app.sessionCount;
                 accentColor = Graphics.COLOR_BLUE;
             }
         }
@@ -109,7 +107,11 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         if (app.state == app.STATE_READY) {
             dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
             
-            dc.drawText(cx, yInfoBase, Graphics.FONT_XTINY, "Focus session: " + app.focusDurationMinutes + " min", Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(cx, yInfoBase, Graphics.FONT_XTINY, "Focus duration: " + app.focusDurationMinutes + " min", Graphics.TEXT_JUSTIFY_CENTER);
+
+            if (infoText.length() > 0) {
+                dc.drawText(cx, yInfoBase + 30, Graphics.FONT_XTINY, infoText, Graphics.TEXT_JUSTIFY_CENTER);
+            }
 
             var currentStress = getCurrentStress();
             if (currentStress != null) {
@@ -125,7 +127,7 @@ class Stress_AwarePomodoroView extends WatchUi.View {
                 }
 
                 dc.setColor(stressColor, Graphics.COLOR_TRANSPARENT);
-                dc.drawText(cx, yInfoBase + 30, Graphics.FONT_XTINY, "Current stress: " + stressLevel, Graphics.TEXT_JUSTIFY_CENTER);
+                dc.drawText(cx, yInfoBase + 60, Graphics.FONT_XTINY, "Current stress: " + stressLevel, Graphics.TEXT_JUSTIFY_CENTER);
             }
         } else {
             // Info text for running/paused states

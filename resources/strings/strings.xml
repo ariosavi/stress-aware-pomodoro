@@ -10,7 +10,7 @@
     <string id="menu_exit">Exit</string>
 
     <!-- Settings -->
-    <string id="FocusDurationTitle">Focus Session Duration</string>
+    <string id="FocusDurationTitle">Focus Duration</string>
     <string id="BreakShortTitle">Short Break Duration</string>
     <string id="BreakLongTitle">Long Break Duration</string>
     <string id="BreakExtraLongTitle">Extra Long Break Duration</string>
