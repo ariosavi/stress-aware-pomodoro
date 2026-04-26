@@ -27,7 +27,11 @@ class Stress_AwarePomodoroDelegate extends WatchUi.BehaviorDelegate {
         if (selectedIndex == -1) {
             // ✅ For BACK button: add EXIT first so it will be selected by default
             menu.addItem("Exit", :exit);
-            
+
+            if (app.state == app.STATE_BREAK_PROMPT) {
+                menu.addItem("Start Break", :start_break);
+            }
+
             if (app.state == app.STATE_BREAK_PROMPT || app.state == app.STATE_BREAK) {
                 menu.addItem("Skip Break", :skip_break);
             }
@@ -53,6 +57,10 @@ class Stress_AwarePomodoroDelegate extends WatchUi.BehaviorDelegate {
             // ✅ For SELECT button: normal order, first item selected by default
             if (app.state == app.STATE_READY) {
                 menu.addItem("Start Pomodoro", :start);
+            }
+
+            if (app.state == app.STATE_BREAK_PROMPT) {
+                menu.addItem("Start Break", :start_break);
             }
 
             if ((app.state == app.STATE_FOCUSING || app.state == app.STATE_BREAK) && !app.isPaused) {
@@ -131,6 +139,16 @@ class PomodoroMenuDelegate extends WatchUi.BehaviorDelegate {
                 }
                 break;
 
+            case :start_break:
+                if (app.state == app.STATE_BREAK_PROMPT) {
+                    app.state = app.STATE_BREAK;
+                    app.timeRemaining = app.breakDuration;
+                    app.isPaused = false;
+                    app.startTimer();
+                    app.vibrateStart();
+                }
+                break;
+
             case :pause:
                 if ((app.state == app.STATE_FOCUSING || app.state == app.STATE_BREAK) && !app.isPaused) {
                     app.isPaused = true;
@@ -184,11 +202,11 @@ class SettingsMenuDelegate extends WatchUi.MenuInputDelegate {
         switch(menuItem) {
             case :focus_duration:
                 openOptionSettingMenu("Focus Duration", "FocusDurationMinutes", 
-                    [15, 20, 25, 30, 45, 60], ["15m", "20m", "25m", "30m", "45m", "60m"]);
+                    [1, 10, 15, 20, 25, 30, 45, 60], ["1m", "10m", "15m", "20m", "25m", "30m", "45m", "60m"]);
                 break;
             case :short_break:
                 openOptionSettingMenu("Short Break", "BreakShortMinutes", 
-                    [3, 5, 7, 10], ["3m", "5m", "7m", "10m"]);
+                    [1, 3, 5, 7, 10], ["1m", "3m", "5m", "7m", "10m"]);
                 break;
             case :long_break:
                 openOptionSettingMenu("Long Break", "BreakLongMinutes", 

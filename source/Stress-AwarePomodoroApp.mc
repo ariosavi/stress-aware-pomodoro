@@ -191,6 +191,7 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
         timeRemaining = 0;
         stressAverage = null;
         isPaused = false;
+        sessionCount = 0;
         saveState();
         WatchUi.requestUpdate();
     }
