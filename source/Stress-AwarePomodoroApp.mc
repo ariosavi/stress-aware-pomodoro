@@ -7,6 +7,7 @@ import Toybox.Time;
 import Toybox.Timer;
 import Toybox.WatchUi;
 
+(:background, :glance)
 class Stress_AwarePomodoroApp extends Application.AppBase {
 
     public var state as Number = PomoState.POMO_STATE_READY;

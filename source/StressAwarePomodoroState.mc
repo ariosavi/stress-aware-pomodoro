@@ -5,21 +5,22 @@ using Toybox.SensorHistory;
 
 module PomoState {
 
-const POMO_STATE_READY = 0;
-const POMO_STATE_FOCUSING = 1;
-const POMO_STATE_ANALYZING = 2;
-const POMO_STATE_BREAK_PROMPT = 3;
-const POMO_STATE_BREAK = 4;
+(:background, :glance) const POMO_STATE_READY = 0;
+(:background, :glance) const POMO_STATE_FOCUSING = 1;
+(:background, :glance) const POMO_STATE_ANALYZING = 2;
+(:background, :glance) const POMO_STATE_BREAK_PROMPT = 3;
+(:background, :glance) const POMO_STATE_BREAK = 4;
 
-const KEY_STATE = "app_state_state";
-const KEY_TIME_REMAINING = "app_state_time_remaining";
-const KEY_BREAK_DURATION = "app_state_break_duration";
-const KEY_STRESS_AVERAGE = "app_state_stress_average";
-const KEY_IS_PAUSED = "app_state_is_paused";
-const KEY_SESSION_COUNT = "app_state_session_count";
-const KEY_TIMER_END_EPOCH = "app_state_timer_end_epoch";
-const KEY_PHASE_DURATION = "app_state_phase_duration";
+(:background, :glance) const KEY_STATE = "app_state_state";
+(:background, :glance) const KEY_TIME_REMAINING = "app_state_time_remaining";
+(:background, :glance) const KEY_BREAK_DURATION = "app_state_break_duration";
+(:background, :glance) const KEY_STRESS_AVERAGE = "app_state_stress_average";
+(:background, :glance) const KEY_IS_PAUSED = "app_state_is_paused";
+(:background, :glance) const KEY_SESSION_COUNT = "app_state_session_count";
+(:background, :glance) const KEY_TIMER_END_EPOCH = "app_state_timer_end_epoch";
+(:background, :glance) const KEY_PHASE_DURATION = "app_state_phase_duration";
 
+(:background, :glance)
 class Snapshot {
     var state = POMO_STATE_READY;
     var timeRemaining = 0;
@@ -31,10 +32,12 @@ class Snapshot {
     var phaseDuration = 0;
 }
 
+(:background, :glance)
 function newSnapshot() as Snapshot {
     return new Snapshot();
 }
 
+(:background, :glance)
 function loadSnapshot() as Snapshot {
     var snapshot = new Snapshot();
 
@@ -81,6 +84,7 @@ function loadSnapshot() as Snapshot {
     return snapshot;
 }
 
+(:background, :glance)
 function saveSnapshot(snapshot as Snapshot) as Void {
     Application.Storage.setValue(KEY_STATE, snapshot.state);
     Application.Storage.setValue(KEY_TIME_REMAINING, snapshot.timeRemaining);
@@ -92,10 +96,12 @@ function saveSnapshot(snapshot as Snapshot) as Void {
     Application.Storage.setValue(KEY_PHASE_DURATION, snapshot.phaseDuration);
 }
 
+(:background, :glance)
 function isRunningState(state) {
     return state == POMO_STATE_FOCUSING || state == POMO_STATE_BREAK;
 }
 
+(:background, :glance)
 function syncCountdown(snapshot as Snapshot, nowEpoch) as Snapshot {
     if (!isRunningState(snapshot.state) || snapshot.isPaused || snapshot.timerEndEpoch <= 0) {
         return snapshot;
@@ -162,6 +168,7 @@ function skipBreakSnapshot(snapshot as Snapshot) as Snapshot {
     return snapshot;
 }
 
+(:background)
 function completeCountdown(snapshot as Snapshot) as Snapshot {
     var previousState = snapshot.state;
 
@@ -197,6 +204,8 @@ function completeCountdown(snapshot as Snapshot) as Snapshot {
 
     return snapshot;
 }
+
+(:background)
 function calculateAverageStress(periodMinutes) {
     var iter = SensorHistory.getStressHistory({:period => periodMinutes});
     var sum = 0.0;

@@ -4,6 +4,7 @@ import Toybox.Lang;
 import Toybox.Time;
 import Toybox.WatchUi;
 
+(:glance)
 class Stress_AwarePomodoroGlanceView extends WatchUi.GlanceView {
 
     function initialize() {
