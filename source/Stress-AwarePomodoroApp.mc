@@ -31,6 +31,7 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
     public var stressThreshold as Number = 50;
     public var vibrationLevel as Number = 1;
     public var enableSound as Boolean = true;
+    public var displaySeconds as Boolean = true;
 
     public const STATE_READY = PomoState.POMO_STATE_READY;
     public const STATE_FOCUSING = PomoState.POMO_STATE_FOCUSING;
@@ -189,7 +190,7 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
     public function vibratePause() as Void {
         if (vibrationLevel == 0 || !(Attention has :vibrate)) { return; }
         var intensity = (vibrationLevel == 1) ? 30 : 50;
-        var duration = (vibrationLevel == 1) ? 60 : 90;
+        var duration = (vibrationLevel == 1) ? 60 : 200;
         Attention.vibrate([
             new Attention.VibeProfile(intensity, duration),
             new Attention.VibeProfile(0, duration),
@@ -219,6 +220,7 @@ class Stress_AwarePomodoroApp extends Application.AppBase {
         stressThreshold = Application.Properties.getValue("StressThreshold") as Number;
         vibrationLevel = Application.Properties.getValue("VibrationLevel") as Number;
         enableSound = Application.Properties.getValue("EnableSound") as Boolean;
+        displaySeconds = Application.Properties.getValue("DisplaySeconds") as Boolean;
     }
 
     private function exportSnapshot() as PomoState.Snapshot {

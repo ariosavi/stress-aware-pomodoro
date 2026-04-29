@@ -195,11 +195,17 @@ class Stress_AwarePomodoroView extends WatchUi.View {
         dc.drawArc(cx, cy, radius, Graphics.ARC_CLOCKWISE, 90, (90 + sweepAngle).toNumber());
     }
 
-    private function formatTime(seconds as Number) as String {
-        var m = seconds / 60;
-        var s = seconds % 60;
-        return Lang.format("$1$:$2$", [m.format("%02d"), s.format("%02d")]);
-    }
+     private function formatTime(seconds as Number) as String {
+         var app = getApp();
+         var m = seconds / 60;
+         var s = seconds % 60;
+         
+         if (app.displaySeconds) {
+             return Lang.format("$1$:$2$", [m.format("%02d"), s.format("%02d")]);
+         } else {
+             return m.format("%d");
+         }
+     }
 
 
     private function getCurrentStress() as Number? {

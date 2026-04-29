@@ -203,22 +203,23 @@ class PomodoroMenuDelegate extends WatchUi.BehaviorDelegate {
         return true;
     }
 
-    private function openSettingsMenu() as Void {
-        var menu = new WatchUi.Menu();
-        menu.setTitle("Settings");
+     private function openSettingsMenu() as Void {
+         var menu = new WatchUi.Menu();
+         menu.setTitle("Settings");
 
-        menu.addItem("Focus Duration", :focus_duration);
-        menu.addItem("Short Break", :short_break);
-        menu.addItem("Long Break", :long_break);
-        menu.addItem("Extra Long Break", :extra_long_break);
-        menu.addItem("Sessions Before Long", :sessions_before_long);
-        menu.addItem("Stress Threshold", :stress_threshold);
-        menu.addItem("Vibration", :vibration);
-        menu.addItem("Sound Alerts", :sound_alerts);
-        menu.addItem("Back to App", :back_to_app);
+         menu.addItem("Focus Duration", :focus_duration);
+         menu.addItem("Short Break", :short_break);
+         menu.addItem("Long Break", :long_break);
+         menu.addItem("Extra Long Break", :extra_long_break);
+         menu.addItem("Sessions Before Long", :sessions_before_long);
+         menu.addItem("Stress Threshold", :stress_threshold);
+         menu.addItem("Vibration", :vibration);
+         menu.addItem("Sound Alerts", :sound_alerts);
+         menu.addItem("Display Seconds", :display_seconds);
+         menu.addItem("Back to App", :back_to_app);
 
-        WatchUi.pushView(menu, new SettingsMenuDelegate(), WatchUi.SLIDE_UP);
-    }
+         WatchUi.pushView(menu, new SettingsMenuDelegate(), WatchUi.SLIDE_UP);
+     }
 
     private function getVibrationLabel(level as Number) as String {
         switch(level) {
@@ -320,6 +321,9 @@ class SettingsMenuDelegate extends WatchUi.MenuInputDelegate {
             case :sound_alerts:
                 openSoundMenu();
                 break;
+            case :display_seconds:
+                openDisplaySecondsMenu();
+                break;
             case :back_to_app:
                 WatchUi.popView(WatchUi.SLIDE_DOWN);
                 break;
@@ -407,6 +411,18 @@ class SettingsMenuDelegate extends WatchUi.MenuInputDelegate {
         menu.addItem("Back", :back);
 
         WatchUi.pushView(menu, new SoundSettingDelegate(), WatchUi.SLIDE_UP);
+    }
+
+    private function openDisplaySecondsMenu() as Void {
+        var currentVal = Application.Properties.getValue("DisplaySeconds") as Boolean;
+        var menu = new WatchUi.Menu();
+        menu.setTitle("Display Seconds: " + (currentVal ? "On" : "Off"));
+
+        menu.addItem("On", :display_seconds_on);
+        menu.addItem("Off", :display_seconds_off);
+        menu.addItem("Back", :back);
+
+        WatchUi.pushView(menu, new DisplaySecondsSettingDelegate(), WatchUi.SLIDE_UP);
     }
 
     private function getVibrationLabel(level as Number) as String {
@@ -508,6 +524,30 @@ class SoundSettingDelegate extends WatchUi.MenuInputDelegate {
         }
 
         Application.Properties.setValue("EnableSound", value);
+        getApp().onSettingsChanged();
+        // Stay in the menu after changing - use Back to go back
+    }
+}
+
+class DisplaySecondsSettingDelegate extends WatchUi.MenuInputDelegate {
+
+    function initialize() {
+        MenuInputDelegate.initialize();
+    }
+
+    function onMenuItem(item as Symbol) as Void {
+        var value = false;
+
+        if (item == :display_seconds_on) {
+            value = true;
+        } else if (item == :display_seconds_off) {
+            value = false;
+        } else if (item == :back) {
+            WatchUi.popView(WatchUi.SLIDE_DOWN);
+            return;
+        }
+
+        Application.Properties.setValue("DisplaySeconds", value);
         getApp().onSettingsChanged();
         // Stay in the menu after changing - use Back to go back
     }

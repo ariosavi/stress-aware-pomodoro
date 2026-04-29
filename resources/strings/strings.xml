@@ -17,10 +17,11 @@
     <string id="SessionsBeforeLongBreakTitle">Sessions Before Extra Long Break</string>
     <string id="StressThresholdTitle">High Stress Threshold</string>
     <string id="EnableSoundTitle">Enable Sound Alerts</string>
-    <string id="VibrationLevelTitle">Vibration Level</string>
-    <string id="VibrationNone">None</string>
-    <string id="VibrationNormal">Normal</string>
-    <string id="VibrationLong">Long</string>
+     <string id="VibrationLevelTitle">Vibration Level</string>
+     <string id="DisplaySecondsTitle">Display Seconds</string>
+     <string id="VibrationNone">None</string>
+     <string id="VibrationNormal">Normal</string>
+     <string id="VibrationLong">Long</string>
 
     <!-- Setting Options -->
     <string id="Opt1m">1m</string>

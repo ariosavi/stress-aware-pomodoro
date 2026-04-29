@@ -8,4 +8,5 @@
     <property id="StressThreshold" type="number">50</property>
     <property id="VibrationLevel" type="number">1</property>
     <property id="EnableSound" type="boolean">true</property>
+    <property id="DisplaySeconds" type="boolean">true</property>
 </properties>
