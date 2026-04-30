@@ -40,6 +40,12 @@ class MenuBuilder {
         return self;
     }
 
+    function addStatsItem() as MenuBuilder {
+        items.add("Statistics");
+        symbols.add(:statistics);
+        return self;
+    }
+
     function addConditionalItems(app as PomodoroSenseApp) as MenuBuilder {
         if (app.state == app.STATE_READY) {
             items.add("Start Pomodoro");
@@ -126,10 +132,12 @@ class PomodoroSenseDelegate extends WatchUi.BehaviorDelegate {
             menuBuilder.setTitle("Menu");
             menuBuilder.addExitItem();
             menuBuilder.addConditionalItems(app);
+            menuBuilder.addStatsItem();
             menuBuilder.addSettingsItem();
         } else {
             menuBuilder.setTitle("Menu");
             menuBuilder.addConditionalItems(app);
+            menuBuilder.addStatsItem();
             menuBuilder.addSettingsItem();
             menuBuilder.addExitItem();
         }
@@ -219,6 +227,10 @@ class PomodoroMenuDelegate extends WatchUi.BehaviorDelegate {
                 openSettingsMenu();
                 return true;
 
+            case :statistics:
+                openStatsView();
+                return true;
+
             case :exit:
                 WatchUi.popView(WatchUi.SLIDE_DOWN);
                 WatchUi.popView(WatchUi.SLIDE_DOWN);
@@ -227,6 +239,11 @@ class PomodoroMenuDelegate extends WatchUi.BehaviorDelegate {
 
         WatchUi.requestUpdate();
         return true;
+    }
+
+    private function openStatsView() as Void {
+        var statsView = new StatsView();
+        WatchUi.pushView(statsView, new StatsDelegate(statsView), WatchUi.SLIDE_UP);
     }
 }
 

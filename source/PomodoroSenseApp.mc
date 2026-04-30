@@ -298,8 +298,16 @@ class PomodoroSenseApp extends Application.AppBase {
     private function finalizeCountdown(shouldAlert as Boolean) as Void {
         clearBackgroundDeadline();
         stopUiTimer();
+        
         var snapshot = exportSnapshot();
         snapshot = PomoState.completeCountdown(snapshot);
+        
+        // Save session record if we just completed a focus session
+        if (state == STATE_FOCUSING) {
+            var bodyBatteryAtEnd = getCurrentBodyBattery();
+            PomoState.saveSessionRecord(snapshot.stressAverage, snapshot.hrAverage, bodyBatteryAtStart, bodyBatteryAtEnd, focusDurationMinutes);
+        }
+        
         applySnapshot(snapshot);
         saveState();
         if (shouldAlert) {

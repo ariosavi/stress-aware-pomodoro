@@ -22,6 +22,9 @@ const KEY_PHASE_DURATION = "app_state_phase_duration";
 const KEY_ALERT_PENDING = "app_state_alert_pending";
 const KEY_BODY_BATTERY_AT_START = "app_state_body_battery_at_start";
 const KEY_HR_AVERAGE = "app_state_hr_average";
+const KEY_SESSION_HISTORY = "app_session_history";
+const KEY_SESSION_HISTORY_INDEX = "app_session_history_index";
+const MAX_HISTORY_RECORDS = 100;
 
 class Snapshot {
     var state = POMO_STATE_READY;
@@ -280,4 +283,42 @@ function calculateAverageStress(periodMinutes) {
     }
 }
 
+// Save a session record to history
+function saveSessionRecord(stressAverage, hrAverage, bodyBatteryAtStart, bodyBatteryAtEnd, focusDurationMinutes) as Void {
+    try {
+        var history = getSessionHistory();
+        
+        // Create new record
+        var record = {
+            "timestamp" => Toybox.Time.now().value(),
+            "stress" => stressAverage,
+            "hr" => hrAverage,
+            "batteryStart" => bodyBatteryAtStart,
+            "batteryEnd" => bodyBatteryAtEnd,
+            "duration" => focusDurationMinutes
+        };
+        
+        history.add(record);
+        
+        // Keep only last MAX_HISTORY_RECORDS
+        if (history.size() > MAX_HISTORY_RECORDS) {
+            history = history.slice(history.size() - MAX_HISTORY_RECORDS, history.size());
+        }
+        
+        Application.Storage.setValue(KEY_SESSION_HISTORY, history);
+    } catch (ex) {
+    }
 }
+
+// Load session history
+function getSessionHistory() as Toybox.Lang.Array {
+    var history = Application.Storage.getValue(KEY_SESSION_HISTORY);
+    if (history == null) {
+        history = [];
+    }
+    return history;
+}
+
+}
+
+
