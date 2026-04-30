@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
+    <!-- Clear History -->
+    <setting propertyKey="@Properties.ClearHistory" title="@Strings.ClearHistoryTitle">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.ClearHistoryNoAction</listEntry>
+            <listEntry value="1">@Strings.ClearHistoryConfirm</listEntry>
+        </settingConfig>
+    </setting>
+
     <!-- Timing -->
     <setting propertyKey="@Properties.FocusDurationMinutes" title="@Strings.FocusDurationTitle">
         <settingConfig type="list">

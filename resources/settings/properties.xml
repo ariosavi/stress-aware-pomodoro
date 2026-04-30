@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <properties>
+    <property id="ClearHistory" type="number">0</property>
     <property id="FocusDurationMinutes" type="number">25</property>
     <property id="BreakShortMinutes" type="number">5</property>
     <property id="BreakLongMinutes" type="number">10</property>

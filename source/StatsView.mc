@@ -16,7 +16,7 @@ import Toybox.Math;
 class StatsView extends WatchUi.View {
 
     private var currentPage as Number = 0;
-    private const TOTAL_PAGES = 5;
+    private const TOTAL_PAGES = 6;
 
     function initialize() {
         View.initialize();
@@ -34,11 +34,12 @@ class StatsView extends WatchUi.View {
         dc.clear();
 
         switch (currentPage) {
-            case 0: drawPageSummary(dc);      break;
-            case 1: drawPageStressChart(dc);  break;
-            case 2: drawPageHRChart(dc);      break;
-            case 3: drawPageBodyBattery(dc);  break;
-            case 4: drawPageAllTimeStats(dc); break;
+            case 0: drawPageSummary(dc);         break;
+            case 1: drawPageStressChart(dc);     break;
+            case 2: drawPageHRChart(dc);         break;
+            case 3: drawPageBodyBattery(dc);     break;
+            case 4: drawPageAllTimeStats(dc);    break;
+            case 5: drawPageClearData(dc);       break;
         }
 
         drawPageIndicator(dc);
@@ -94,11 +95,12 @@ class StatsView extends WatchUi.View {
         var w  = dc.getWidth();
         var cx = w / 2;
         var h  = dc.getHeight();
-        var cy = contentY + (h - contentY - 30) / 2 - 20;
-        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+        var cy = contentY + (h - contentY - 30) / 2 - 40;
+        dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
         dc.drawText(cx, cy,      Graphics.FONT_XTINY, msg,                Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(cx, cy + 22, Graphics.FONT_XTINY, "Complete sessions", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(cx, cy + 44, Graphics.FONT_XTINY, "to see history",    Graphics.TEXT_JUSTIFY_CENTER);
+                dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cx, cy + 40, Graphics.FONT_XTINY, "Complete sessions", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx, cy + 80, Graphics.FONT_XTINY, "to see history",    Graphics.TEXT_JUSTIFY_CENTER);
     }
 
     private function drawSep(dc as Dc, y as Number, w as Number) as Void {
@@ -243,8 +245,7 @@ class StatsView extends WatchUi.View {
         var count         = todaySessions.size();
 
         if (count == 0) {
-            dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(cx, y + 50, Graphics.FONT_XTINY, "No sessions today", Graphics.TEXT_JUSTIFY_CENTER);
+            drawNoData(dc, y, "No sessions today yet");
             return;
         }
 
@@ -469,7 +470,7 @@ class StatsView extends WatchUi.View {
                 }
 
                 // colour by start level
-                var col = bs >= 50 ? Graphics.COLOR_GREEN
+                var col = bs >= 50 ? Graphics.COLOR_BLUE
                         : bs >= 25 ? Graphics.COLOR_YELLOW
                         : Graphics.COLOR_RED;
                 colors.add(col);
@@ -490,7 +491,7 @@ class StatsView extends WatchUi.View {
         var chartBot = h - fontH3 - 60;
         var chartH   = chartBot - chartTop;
 
-        drawBarChart(dc, startValues, 100, colors, Graphics.COLOR_GREEN,
+        drawBarChart(dc, startValues, 100, colors, Graphics.COLOR_BLUE,
                      chartTop, chartBot, "100", "0", null);
 
         // Draw delta above each bar – use same fixed geometry as drawBarChart
@@ -577,10 +578,13 @@ class StatsView extends WatchUi.View {
         }
 
         var lineH = 40;
-
+        var sessionTitile = "Sessions: ";
+        if (totalSessions <= 1) {
+            sessionTitile = "Session: ";
+        }
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
         dc.drawText(cx, y, Graphics.FONT_XTINY,
-                    "Sessions: " + totalSessions, Graphics.TEXT_JUSTIFY_CENTER);
+                    sessionTitile + totalSessions, Graphics.TEXT_JUSTIFY_CENTER);
         y += lineH;
         dc.drawText(cx, y, Graphics.FONT_XTINY,
                     "Total Focus: " + tH + "h " + tM + "m", Graphics.TEXT_JUSTIFY_CENTER);
@@ -618,10 +622,32 @@ class StatsView extends WatchUi.View {
             dc.setColor(Graphics.COLOR_DK_RED, Graphics.COLOR_TRANSPARENT);
             dc.drawText(cx, y, Graphics.FONT_XTINY,
                         "Worst HR: " + worstHR + " bpm", Graphics.TEXT_JUSTIFY_CENTER);
+            y += lineH;
         } else {
             dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
             dc.drawText(cx, y, Graphics.FONT_XTINY, "HR: no data", Graphics.TEXT_JUSTIFY_CENTER);
+            y += lineH;
         }
+    }
+
+    // ── PAGE 5 – Clear Data ───────────────────────────────────
+    private function drawPageClearData(dc as Dc) as Void {
+        var w  = dc.getWidth();
+        var cx = w / 2;
+
+        var y = drawTitle(dc, "Clear Data");
+        
+        var contentY = y + 70;
+        var cx_text = cx;
+
+        // Instructions for clearing data via Settings
+        dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cx_text, contentY, Graphics.FONT_TINY, "Go to", Graphics.TEXT_JUSTIFY_CENTER);
+        contentY += 50;
+        dc.drawText(cx_text, contentY, Graphics.FONT_TINY, "Settings", Graphics.TEXT_JUSTIFY_CENTER);
+        contentY += 50;
+        dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cx_text, contentY, Graphics.FONT_TINY, "to clear data", Graphics.TEXT_JUSTIFY_CENTER);
     }
 
     // ── Navigation ────────────────────────────────────────────
@@ -634,4 +660,5 @@ class StatsView extends WatchUi.View {
         currentPage = currentPage > 0 ? currentPage - 1 : TOTAL_PAGES - 1;
         WatchUi.requestUpdate();
     }
+
 }

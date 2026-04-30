@@ -319,6 +319,14 @@ function getSessionHistory() as Toybox.Lang.Array {
     return history;
 }
 
+// Clear all session history
+function clearSessionHistory() as Void {
+    try {
+        Application.Storage.setValue(KEY_SESSION_HISTORY, []);
+    } catch (ex) {
+    }
+}
+
 }
 
 

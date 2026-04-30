@@ -158,23 +158,24 @@ class PomodoroMenuDelegate extends WatchUi.BehaviorDelegate {
         return true;
     }
 
-    private function openSettingsMenu() as Void {
-        var menu = new WatchUi.Menu();
-        menu.setTitle("Settings");
+     private function openSettingsMenu() as Void {
+         var menu = new WatchUi.Menu();
+         menu.setTitle("Settings");
 
-        menu.addItem("Focus Duration", :focus_duration);
-        menu.addItem("Short Break", :short_break);
-        menu.addItem("Long Break", :long_break);
-        menu.addItem("Extra Long Break", :extra_long_break);
-        menu.addItem("Sessions Before Long", :sessions_before_long);
-        menu.addItem("Stress Threshold", :stress_threshold);
-        menu.addItem("Vibration", :vibration);
-        menu.addItem("Sound Alerts", :sound_alerts);
-        menu.addItem("Display Seconds", :display_seconds);
-        menu.addItem("Back to App", :back_to_app);
+         menu.addItem("Clear History", :clear_history);
+         menu.addItem("Focus Duration", :focus_duration);
+         menu.addItem("Short Break", :short_break);
+         menu.addItem("Long Break", :long_break);
+         menu.addItem("Extra Long Break", :extra_long_break);
+         menu.addItem("Sessions Before Long", :sessions_before_long);
+         menu.addItem("Stress Threshold", :stress_threshold);
+         menu.addItem("Vibration", :vibration);
+         menu.addItem("Sound Alerts", :sound_alerts);
+         menu.addItem("Display Seconds", :display_seconds);
+         menu.addItem("Back to App", :back_to_app);
 
-        WatchUi.pushView(menu, new SettingsMenuDelegate(), WatchUi.SLIDE_UP);
-    }
+         WatchUi.pushView(menu, new SettingsMenuDelegate(), WatchUi.SLIDE_UP);
+     }
 
     private function getVibrationLabel(level as Number) as String {
         switch(level) {
@@ -255,6 +256,9 @@ class SettingsMenuDelegate extends WatchUi.MenuInputDelegate {
 
     function onMenuItem(menuItem as Symbol) as Void {
         switch(menuItem) {
+            case :clear_history:
+                openClearHistoryMenu();
+                break;
             case :focus_duration:
                 openOptionSettingMenu("Focus Duration", "FocusDurationMinutes", 
                     [5, 10, 15, 20, 25, 30, 40, 45, 50, 60], ["5m", "10m", "15m", "20m", "25m", "30m", "40m", "45m", "50m", "60m"]);
@@ -292,6 +296,17 @@ class SettingsMenuDelegate extends WatchUi.MenuInputDelegate {
                 WatchUi.popView(WatchUi.SLIDE_DOWN);
                 break;
         }
+    }
+
+    private function openClearHistoryMenu() as Void {
+        var menu = new WatchUi.Menu();
+        menu.setTitle("Clear History");
+
+        menu.addItem("No Action", :clear_no);
+        menu.addItem("Yes, Clear", :clear_yes);
+        menu.addItem("Back", :back);
+
+        WatchUi.pushView(menu, new ClearHistoryDelegate(), WatchUi.SLIDE_UP);
     }
 
     private function openOptionSettingMenu(title as String, propertyKey as String, options as Array, optionLabels as Array or Null) as Void {
@@ -560,5 +575,26 @@ class OptionSettingDelegate extends WatchUi.MenuInputDelegate {
             }
         }
         return value.format("%d");
+    }
+}
+
+class ClearHistoryDelegate extends WatchUi.MenuInputDelegate {
+
+    function initialize() {
+        MenuInputDelegate.initialize();
+    }
+
+    function onMenuItem(item as Symbol) as Void {
+        if (item == :clear_yes) {
+            // Set ClearHistory to 1 to trigger data deletion
+            Application.Properties.setValue("ClearHistory", 1);
+            getApp().onSettingsChanged();
+        } else if (item == :back) {
+            WatchUi.popView(WatchUi.SLIDE_DOWN);
+            return;
+        }
+        
+        // Close menu after action
+        WatchUi.popView(WatchUi.SLIDE_DOWN);
     }
 }

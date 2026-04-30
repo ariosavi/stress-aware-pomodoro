@@ -30,6 +30,7 @@ class StatsDelegate extends WatchUi.BehaviorDelegate {
     }
 
     function onBack() as Boolean {
+        // Normal back behavior - always exit stats view
         WatchUi.popView(WatchUi.SLIDE_DOWN);
         return true;
     }

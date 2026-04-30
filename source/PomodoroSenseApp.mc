@@ -69,6 +69,15 @@ class PomodoroSenseApp extends Application.AppBase {
     }
 
     function onSettingsChanged() as Void {
+        // Check if user selected "Delete All Data" option
+        var clearHistoryValue = Application.Properties.getValue("ClearHistory") as Number;
+        if (clearHistoryValue != null && clearHistoryValue == 1) {
+            // Clear session history
+            PomoState.clearSessionHistory();
+            // Reset the value back to 0 (No Action)
+            Application.Properties.setValue("ClearHistory", 0);
+        }
+        
         loadSettings();
         saveState();
         WatchUi.requestUpdate();

@@ -6,5 +6,6 @@
     <menu-item id="MENU_RESUME" label="@Strings.menu_resume" />
     <menu-item id="MENU_RESET" label="@Strings.menu_reset" />
     <menu-item id="MENU_SKIP_BREAK" label="@Strings.menu_skip_break" />
+    <menu-item id="MENU_CLEAR_HISTORY" label="@Strings.menu_clear_history" />
     <menu-item id="MENU_EXIT" label="@Strings.menu_exit" />
 </menu>

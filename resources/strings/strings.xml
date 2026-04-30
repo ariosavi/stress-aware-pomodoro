@@ -8,9 +8,13 @@
     <string id="menu_reset">Reset</string>
     <string id="menu_skip_break">Skip Break</string>
     <string id="menu_statistics">Statistics</string>
+    <string id="menu_clear_history">Clear History</string>
     <string id="menu_exit">Exit</string>
 
     <!-- Settings -->
+    <string id="ClearHistoryTitle">Clear History</string>
+    <string id="ClearHistoryNoAction">No Action</string>
+    <string id="ClearHistoryConfirm">Yes, Clear</string>
     <string id="FocusDurationTitle">Focus Duration</string>
     <string id="BreakShortTitle">Short Break Duration</string>
     <string id="BreakLongTitle">Long Break Duration</string>
